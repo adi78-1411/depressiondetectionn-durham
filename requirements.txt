@@ -14,3 +14,4 @@ tweepy==3.10.0
 urllib3==1.26.4
 wincertstore==0.2
 gunicorn==19.9.0
+pandas==1.2.3
