@@ -4,7 +4,7 @@ from main import get_related_tweets
 
 print("Running flask.py")
 app = Flask(__name__)
-app.run(debug=True)
+# app.run(debug=True)
 
 
 # load the pipeline object
@@ -38,3 +38,8 @@ def get_data():
 def success(name):
     return "<xmp>" + str(requestResults(name)) + " </xmp> "
 
+if __name__ == "__main__":
+    # Setting debug to True enables debug output. This line should be
+    # removed before deploying a production app.
+    app.debug = True
+    app.run()
