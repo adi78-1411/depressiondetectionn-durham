@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from joblib import load
-from main import get_related_tweets
+from app import get_related_tweets
 
 # load the pipeline object
 pipeline = load("DD.joblib")
@@ -15,8 +15,8 @@ def requestResults(name):
     data = str(tweets.prediction.value_counts()) + '\n\n'
     return data + str(tweets)
 
-
 app = Flask(__name__)
+app.run(debug=True)
 
 # render default webpage
 @app.route('/')
@@ -35,4 +35,3 @@ def get_data():
 def success(name):
     return "<xmp>" + str(requestResults(name)) + " </xmp> "
 
-app.run(debug=True)
