@@ -1,44 +1,40 @@
-import tweepy
-import time
-import pandas as pd
-pd.set_option('display.max_colwidth', 1000)
+from flask import Flask, render_template, request, redirect, url_for
+from joblib import load
+from main import get_related_tweets
 
-# api key
-api_key = "bvslKyerdSERLQere64XilQYx"
-
-# api secret key
-api_secret_key = "2YB7CPzEWBQLFQRzy7xXjyxcPpbgarVj8617extbB4GQwRTTbC"
-# access token
-access_token = "1362198643474857985-u15tmUT3Dz6MxU2uxyE0mxRgc6R7dd"
-# access token secret
-access_token_secret = "Krl8jdTf1QU6ynG1TaVwRcI3GaLwpVEUtgXH10Cl5Sqi3"
-
-# authorize the API Key
-authentication = tweepy.OAuthHandler(api_key, api_secret_key)
-
-# authorization to user's access token and access token secret
-authentication.set_access_token(access_token, access_token_secret)
-
-# call the api
-api = tweepy.API(authentication, wait_on_rate_limit=True)
+print("Running flask.py")
+app = Flask(__name__)
+app.run(debug=True)
 
 
+# load the pipeline object
+pipeline = load("DD.joblib")
 
-def get_related_tweets(text_query):
-    # list to store tweets
-    tweets_list = []
-    # no of tweets
-    count = 50
-    try:
-        # Pulling individual tweets from query
-        for tweet in api.search(q=text_query, count=count):
-            print(tweet.text)
-            # Adding to list that contains all tweets
-            tweets_list.append({'created_at': tweet.created_at,
-                                'tweet_id': tweet.id,
-                                'tweet_text': tweet.text})
-        return pd.DataFrame.from_dict(tweets_list)
+# function to get results for a particular text query
+def requestResults(name):
+    # get the tweets text
+    tweets = get_related_tweets(name)
+    # get the prediction
+    tweets['prediction'] = pipeline.predict(tweets['tweet_text'])
+    # get the value counts of different labels predicted
+    data = str(tweets.prediction.value_counts()) + '\n\n'
+    return data + str(tweets)
 
-    except BaseException as e:
-        print('failed on_status,', str(e))
-        time.sleep(3)
+
+# render default webpage
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+# when the post method detect, then redirect to success function
+@app.route('/', methods=['POST', 'GET'])
+def get_data():
+    if request.method == 'POST':
+        user = request.form['search']
+        return redirect(url_for('success', name=user))
+
+# get the data for the requested query
+@app.route('/success/<name>')
+def success(name):
+    return "<xmp>" + str(requestResults(name)) + " </xmp> "
+
